@@ -1,0 +1,62 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Wolfram 14.3' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       154,          7]
+NotebookDataLength[      1552,         54]
+NotebookOptionsPosition[      1186,         39]
+NotebookOutlinePosition[      1597,         56]
+CellTagsIndexPosition[      1554,         53]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"banditMeans", "=", 
+   RowBox[{"RandomVariate", "[", 
+    RowBox[{
+     RowBox[{"NormalDistribution", "[", 
+      RowBox[{"0", ",", "1"}], "]"}], ",", "10"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"bandits", "=", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"NormalDistribution", "[", 
+      RowBox[{"#", ",", "1"}], "]"}], "&"}], "/@", "banditMeans"}]}], 
+  ";"}], "\[IndentingNewLine]"}], "Input",
+ CellChangeTimes->{{3.976986329830988*^9, 3.976986491899807*^9}, {
+  3.976986920758667*^9, 
+  3.9769869419742537`*^9}},ExpressionUUID->"ea60cdb0-0ba5-4316-8636-\
+936f03e5ec16"]
+},
+WindowSize->{864, 1051},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+LightDark->"Light",
+FrontEndVersion->"14.3 for Mac OS X ARM (64-bit) (July 8, 2025)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"b59b1c70-6878-4d74-9d73-012cdd3a9d40"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[554, 20, 628, 17, 70, "Input",ExpressionUUID->"ea60cdb0-0ba5-4316-8636-936f03e5ec16"]
+}
+]
+*)
+
