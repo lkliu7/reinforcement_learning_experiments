@@ -1,0 +1,68 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Wolfram 14.3' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       154,          7]
+NotebookDataLength[      1751,         58]
+NotebookOptionsPosition[      1384,         43]
+NotebookOutlinePosition[      1795,         60]
+CellTagsIndexPosition[      1752,         57]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"banditMeans", "=", 
+   RowBox[{"ConstantArray", "[", 
+    RowBox[{"0", ",", "10"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"bandit", "[", "i_", "]"}], ":=", 
+  RowBox[{"NormalDistribution", "[", 
+   RowBox[{
+    RowBox[{"banditMeans", "[", 
+     RowBox[{"[", "i", "]"}], "]"}], ",", "1"}], "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{"Do", "[", 
+  RowBox[{
+   RowBox[{"banditMeans", "+=", 
+    RowBox[{"RandomVariate", "[", 
+     RowBox[{
+      RowBox[{"NormalDistribution", "[", 
+       RowBox[{"0", ",", "0.01"}], "]"}], ",", "10"}], "]"}]}], ",", 
+   RowBox[{"{", 
+    RowBox[{"t", ",", "10000"}], "}"}]}], "]"}]}], "Input",
+ CellChangeTimes->{{3.976986329830988*^9, 3.976986491899807*^9}},
+ CellLabel->"In[5]:=",ExpressionUUID->"ea60cdb0-0ba5-4316-8636-936f03e5ec16"]
+},
+WindowSize->{864, 1051},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+LightDark->"Light",
+FrontEndVersion->"14.3 for Mac OS X ARM (64-bit) (July 8, 2025)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"263ea345-8fd0-4c5f-8d41-b73e8e0cbec4"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[554, 20, 826, 21, 121, "Input",ExpressionUUID->"ea60cdb0-0ba5-4316-8636-936f03e5ec16"]
+}
+]
+*)
+
+(* End of internal cache information *)
+
