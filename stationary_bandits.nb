@@ -10,32 +10,149 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       154,          7]
-NotebookDataLength[      1552,         54]
-NotebookOptionsPosition[      1186,         39]
-NotebookOutlinePosition[      1597,         56]
-CellTagsIndexPosition[      1554,         53]
+NotebookDataLength[      6439,        177]
+NotebookOptionsPosition[      5514,        156]
+NotebookOutlinePosition[      5925,        173]
+CellTagsIndexPosition[      5882,        170]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
 Notebook[{
 Cell[BoxData[{
  RowBox[{
+  RowBox[{"nBandits", "=", "10"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"steps", "=", "2000"}], ";"}]}], "Input",
+ CellChangeTimes->{{3.976987096572966*^9, 3.9769870983408823`*^9}, {
+  3.976987410928422*^9, 3.9769874123045807`*^9}},
+ CellLabel->"In[60]:=",ExpressionUUID->"6c9c8af2-694f-4873-8ca1-2b7fbde9eede"],
+
+Cell[BoxData[{
+ RowBox[{
   RowBox[{"banditMeans", "=", 
    RowBox[{"RandomVariate", "[", 
     RowBox[{
      RowBox[{"NormalDistribution", "[", 
-      RowBox[{"0", ",", "1"}], "]"}], ",", "10"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+      RowBox[{"0", ",", "1"}], "]"}], ",", "nBandits"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"bandits", "=", 
    RowBox[{
     RowBox[{
      RowBox[{"NormalDistribution", "[", 
       RowBox[{"#", ",", "1"}], "]"}], "&"}], "/@", "banditMeans"}]}], 
-  ";"}], "\[IndentingNewLine]"}], "Input",
+  ";"}]}], "Input",
  CellChangeTimes->{{3.976986329830988*^9, 3.976986491899807*^9}, {
-  3.976986920758667*^9, 
-  3.9769869419742537`*^9}},ExpressionUUID->"ea60cdb0-0ba5-4316-8636-\
-936f03e5ec16"]
+   3.976986920758667*^9, 3.9769869419742537`*^9}, 3.976987006441496*^9, {
+   3.9769870991977673`*^9, 3.976987100514545*^9}},
+ CellLabel->"In[62]:=",ExpressionUUID->"ea60cdb0-0ba5-4316-8636-936f03e5ec16"],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"means", "=", 
+   RowBox[{"ConstantArray", "[", 
+    RowBox[{"0", ",", "nBandits"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"rewards", "=", 
+   RowBox[{"ConstantArray", "[", 
+    RowBox[{"0", ",", "nBandits"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"actions", "=", 
+   RowBox[{"ConstantArray", "[", 
+    RowBox[{"0", ",", "nBandits"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"optimalBandit", "=", 
+   RowBox[{
+    RowBox[{"FirstPosition", "[", 
+     RowBox[{"banditMeans", ",", 
+      RowBox[{"Max", "[", "banditMeans", "]"}]}], "]"}], "[", 
+    RowBox[{"[", "1", "]"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{"Do", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"greedyChoice", "=", 
+     RowBox[{
+      RowBox[{"FirstPosition", "[", 
+       RowBox[{"means", ",", 
+        RowBox[{"Max", "[", "means", "]"}]}], "]"}], "[", 
+      RowBox[{"[", "1", "]"}], "]"}]}], ";", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"actions", "[", 
+      RowBox[{"[", "greedyChoice", "]"}], "]"}], "+=", "1"}], ";", 
+    "\[IndentingNewLine]", 
+    RowBox[{"reward", "=", 
+     RowBox[{"RandomVariate", "[", 
+      RowBox[{"bandits", "[", 
+       RowBox[{"[", "greedyChoice", "]"}], "]"}], "]"}]}], ";", 
+    "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"rewards", "[", 
+      RowBox[{"[", "greedyChoice", "]"}], "]"}], "+=", "reward"}], ";", 
+    "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"means", "[", 
+      RowBox[{"[", "greedyChoice", "]"}], "]"}], "=", 
+     RowBox[{
+      RowBox[{"rewards", "[", 
+       RowBox[{"[", "greedyChoice", "]"}], "]"}], "/", 
+      RowBox[{"actions", "[", 
+       RowBox[{"[", "greedyChoice", "]"}], "]"}]}]}], ";", 
+    "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"averageReward", "[", "t", "]"}], "=", 
+     RowBox[{
+      RowBox[{"Total", "[", "rewards", "]"}], "/", "t"}]}], ";", 
+    "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"optimal", "[", "t", "]"}], "=", 
+     RowBox[{
+      RowBox[{"actions", "[", 
+       RowBox[{"[", "optimalBandit", "]"}], "]"}], "/", "t"}]}]}], ",", 
+   RowBox[{"{", 
+    RowBox[{"t", ",", "steps"}], "}"}]}], "]"}]}], "Input",
+ CellChangeTimes->{{3.976987082693941*^9, 3.976987148013678*^9}, {
+  3.976987188649578*^9, 3.9769871936056967`*^9}, {3.976987238222849*^9, 
+  3.976987270913368*^9}, {3.9769873116376753`*^9, 3.976987409617915*^9}, {
+  3.9769874520803223`*^9, 3.97698746909752*^9}, {3.976987547678344*^9, 
+  3.976987618924993*^9}},
+ CellLabel->
+  "In[102]:=",ExpressionUUID->"b3846d59-fef5-4eaf-b659-7f654bd9e363"],
+
+Cell[BoxData["means"], "Input",
+ CellChangeTimes->{{3.97698736316661*^9, 3.976987363465126*^9}},
+ CellLabel->
+  "In[107]:=",ExpressionUUID->"b58f527f-20ab-4865-8dfb-63ddfcd2a9e9"],
+
+Cell[BoxData["rewards"], "Input",
+ CellChangeTimes->{{3.976987365030661*^9, 3.976987366273499*^9}},
+ CellLabel->
+  "In[108]:=",ExpressionUUID->"3a78e684-f11b-42bb-9d57-46a4725d9939"],
+
+Cell[BoxData["actions"], "Input",
+ CellChangeTimes->{{3.97698736808004*^9, 3.976987370161941*^9}},
+ CellLabel->
+  "In[109]:=",ExpressionUUID->"39a1be8e-813a-421b-b4b8-6d2b4043b4b3"],
+
+Cell[BoxData[{
+ RowBox[{"ListPlot", "[", 
+  RowBox[{"Table", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"t", ",", 
+      RowBox[{"averageReward", "[", "t", "]"}]}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"t", ",", "2000"}], "}"}]}], "]"}], "]"}], "\[IndentingNewLine]", 
+ RowBox[{"ListPlot", "[", 
+  RowBox[{"Table", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"t", ",", 
+      RowBox[{"optimal", "[", "t", "]"}]}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"t", ",", "2000"}], "}"}]}], "]"}], "]"}]}], "Input",
+ CellChangeTimes->{{3.9769874847460814`*^9, 3.976987503089293*^9}, {
+  3.9769876253778553`*^9, 3.9769876277571507`*^9}},
+ CellLabel->
+  "In[110]:=",ExpressionUUID->"fbbcab03-d7ff-4914-974e-2b811f46d587"]
 },
 WindowSize->{864, 1051},
 WindowMargins->{{0, Automatic}, {Automatic, 0}},
@@ -55,7 +172,13 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[554, 20, 628, 17, 70, "Input",ExpressionUUID->"ea60cdb0-0ba5-4316-8636-936f03e5ec16"]
+Cell[554, 20, 350, 7, 49, "Input",ExpressionUUID->"6c9c8af2-694f-4873-8ca1-2b7fbde9eede"],
+Cell[907, 29, 705, 17, 49, "Input",ExpressionUUID->"ea60cdb0-0ba5-4316-8636-936f03e5ec16"],
+Cell[1615, 48, 2608, 69, 233, "Input",ExpressionUUID->"b3846d59-fef5-4eaf-b659-7f654bd9e363"],
+Cell[4226, 119, 179, 3, 29, "Input",ExpressionUUID->"b58f527f-20ab-4865-8dfb-63ddfcd2a9e9"],
+Cell[4408, 124, 182, 3, 29, "Input",ExpressionUUID->"3a78e684-f11b-42bb-9d57-46a4725d9939"],
+Cell[4593, 129, 181, 3, 29, "Input",ExpressionUUID->"39a1be8e-813a-421b-b4b8-6d2b4043b4b3"],
+Cell[4777, 134, 733, 20, 49, "Input",ExpressionUUID->"fbbcab03-d7ff-4914-974e-2b811f46d587"]
 }
 ]
 *)
