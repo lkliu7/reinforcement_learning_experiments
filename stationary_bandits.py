@@ -1,5 +1,6 @@
 import random
 import numpy as np
+import matplotlib.pyplot as plt
 
 # MARK: Configuration
 CONFIG = {
@@ -54,3 +55,19 @@ for epsilon in epsilon_list:
     cumulative_average_rewards[epsilon] = np.sum(ensemble_average_rewards, axis=0) / runs
     ensemble_optimal_ratio = np.array(ensemble_optimal_ratio)
     cumulative_optimal_ratio[epsilon] = np.sum(ensemble_optimal_ratio, axis=0) / runs
+
+for epsilon in epsilon_list:
+    plt.plot(range(1, time_steps+1), cumulative_average_rewards[epsilon], label=f'epsilon = {epsilon}')
+plt.xlabel('steps')
+plt.ylabel('average reward')
+plt.title(f'average performance of epsilon-greedy methods')
+plt.legend()
+plt.show()
+
+for epsilon in epsilon_list:
+    plt.plot(range(1, time_steps+1), cumulative_optimal_ratio[epsilon], label=f'epsilon = {epsilon}')
+plt.xlabel('steps')
+plt.ylabel('optimal action ratio')
+plt.title(f'average fraction epsilon-greedy methods chose optimal action')
+plt.legend()
+plt.show()
