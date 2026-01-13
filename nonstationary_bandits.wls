@@ -8,10 +8,13 @@ runs = 2000;
 meanDrift = 0.01;
 
 
-bandits = ConstantArray[0, nBandits];
+Monitor[ensembleAverageRewards = ConstantArray[0, timeSteps];
+ensembleOptimalRatio = ConstantArray[0, timeSteps];
+Do[bandits = ConstantArray[0, nBandits];
 estimatedMeans = ConstantArray[0, nBandits];
 totalRewards = ConstantArray[0, nBandits];
 actionCounts = ConstantArray[0, nBandits];
+optimalActionCount = 0;
 {averageReward, optimalRatio} = Reap[Do[greedyChoice = FirstPosition[estimatedMeans, Max[estimatedMeans]];
 choice = If[RandomReal[] < \[Epsilon], RandomInteger[{1, nBandits}], greedyChoice];
 actionCounts[[choice]] += 1;
@@ -20,6 +23,17 @@ totalRewards[[choice]] += reward;
 estimatedMeans[[choice]] = totalRewards[[choice]] / actionCounts[[choice]];
 Sow[Total[totalRewards] / t, "average"];
 optimalBandit = FirstPosition[bandits, Max[bandits]][[1]];
-Sow[actionCounts[[optimalBandit]] / t, "optimal"];
+If[choice == optimalBandit, optimalActionCount += 1];
+Sow[optimalActionCount / t, "optimal"];
 bandits += RandomVariate[NormalDistribution[0, meanDrift], nBandits], {t, timeSteps}], {"average", "optimal"}][[2, All, 1]];
+ensembleAverageRewards += averageReward;
+ensembleOptimalRatio += optimalRatio, {r, runs}];
+ensembleAverageRewards /= runs;
+ensembleOptimalRatio /= runs, {r, t}]
+
+
+ListPlot[Table[{t, ensembleAverageRewards[[t]]}, {t, timeSteps}]]
+ListPlot[Table[{t, ensembleOptimalRatio[[t]]}, {t, timeSteps}]]
+
+
 
