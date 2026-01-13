@@ -1,0 +1,36 @@
+#!/usr/bin/env wolframscript
+(* ::Package:: *)
+
+(* ::Input:: *)
+(*nBandits=10;*)
+(*steps=1000;*)
+(*runs=2000;*)
+(*\[Epsilon]=0.01;*)
+
+
+(* ::Input:: *)
+(*Monitor[Do[ensembleAverageReward[\[Epsilon]]=ConstantArray[0,steps];*)
+(*ensembleOptimal[\[Epsilon]]=ConstantArray[0,steps];*)
+(*Do[banditMeans=RandomVariate[NormalDistribution[0,1],nBandits];*)
+(*bandits=NormalDistribution[#,1]&/@banditMeans;*)
+(*means=ConstantArray[0,nBandits];*)
+(*rewards=ConstantArray[0,nBandits];*)
+(*actions=ConstantArray[0,nBandits];*)
+(*optimalBandit=FirstPosition[banditMeans,Max[banditMeans]][[1]];*)
+(*{averageReward,optimal}=Reap[Do[greedyChoice=FirstPosition[means,Max[means]][[1]];*)
+(*choice=If[RandomReal[]<\[Epsilon],RandomInteger[{1,nBandits}],greedyChoice];*)
+(*actions[[choice]]+=1;*)
+(*reward=RandomVariate[bandits[[choice]]];*)
+(*rewards[[choice]]+=reward;*)
+(*means[[choice]]=rewards[[choice]]/actions[[choice]];*)
+(*Sow[Total[rewards]/t,"average"];*)
+(*Sow[actions[[optimalBandit]]/t,"optimal"],{t,steps}],{"average","optimal"}][[2,All,1]];*)
+(*ensembleAverageReward[\[Epsilon]]+=averageReward;*)
+(*ensembleOptimal[\[Epsilon]]+=optimal,{r,runs}];*)
+(*ensembleAverageReward[\[Epsilon]]/=runs;*)
+(*ensembleOptimal[\[Epsilon]]/=runs,{\[Epsilon],{0,0.01,0.1}}],{\[Epsilon],r,t}]*)
+
+
+(* ::Input:: *)
+(*ListPlot[Table[{t,ensembleAverageReward[#][[t]]},{t,steps}]&/@{0,0.01,0.1}]*)
+(*ListPlot[Table[{t,ensembleOptimal[#][[t]]},{t,steps}]&/@{0,0.01,0.1}]*)
