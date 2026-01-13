@@ -2,6 +2,8 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 
+# 10-armed testbed experiment: compares epsilon-greedy methods with different exploration rates
+
 # MARK: Configuration
 CONFIG = {
     'n_bandits': 10,
@@ -25,6 +27,7 @@ for epsilon in epsilon_list:
     ensemble_optimal_ratio = []
 
     for run in range(runs):
+        # Each bandit has a reward drawn from N(q*(a), 1) where q*(a) ~ N(0, 1)
         bandit_means = np.random.randn(n_bandits)
         estimated_means = np.zeros(n_bandits)
         total_rewards = np.zeros(n_bandits)
@@ -35,22 +38,24 @@ for epsilon in epsilon_list:
 
         for t in range(time_steps):
             greedy_choice = estimated_means.argmax()
+            # Epsilon-greedy action selection
             if random.random() < epsilon:
-                action = np.random.randint(n_bandits)
+                action = np.random.randint(n_bandits)  # Explore
             else:
-                action = greedy_choice
+                action = greedy_choice  # Exploit
             action_counts[action] += 1
-            reward = bandit_means[action] + np.random.randn()
+            reward = bandit_means[action] + np.random.randn()  # Reward ~ N(q*(a), 1)
             total_rewards[action] += reward
-            estimated_means[action] = total_rewards[action] / action_counts[action]
-            average_reward.append(total_rewards.sum() / (t + 1))
-            optimal_ratio.append(action_counts[optimal_bandit] / (t + 1))
+            estimated_means[action] = total_rewards[action] / action_counts[action]  # Sample average
+            average_reward.append(total_rewards.sum() / (t + 1))  # Cumulative average reward
+            optimal_ratio.append(action_counts[optimal_bandit] / (t + 1))  # Fraction of optimal actions
 
         ensemble_average_rewards.append(average_reward)
         ensemble_optimal_ratio.append(optimal_ratio)
         if run % progress_interval == progress_interval - 1:
             print(f'Completed run {run + 1}.')
 
+    # Average performance across all runs for this epsilon value
     ensemble_average_rewards = np.array(ensemble_average_rewards)
     cumulative_average_rewards[epsilon] = np.sum(ensemble_average_rewards, axis=0) / runs
     ensemble_optimal_ratio = np.array(ensemble_optimal_ratio)
