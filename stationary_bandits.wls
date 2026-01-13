@@ -5,7 +5,7 @@
 (*nBandits=10;*)
 (*steps=1000;*)
 (*runs=2000;*)
-(*\[Epsilon]=0.01;*)
+(*\[Epsilon]List={0,0.01,0.1};*)
 
 
 (* ::Input:: *)
@@ -28,9 +28,9 @@
 (*ensembleAverageReward[\[Epsilon]]+=averageReward;*)
 (*ensembleOptimal[\[Epsilon]]+=optimal,{r,runs}];*)
 (*ensembleAverageReward[\[Epsilon]]/=runs;*)
-(*ensembleOptimal[\[Epsilon]]/=runs,{\[Epsilon],{0,0.01,0.1}}],{\[Epsilon],r,t}]*)
+(*ensembleOptimal[\[Epsilon]]/=runs,{\[Epsilon],\[Epsilon]List}],{\[Epsilon],r,t}]*)
 
 
 (* ::Input:: *)
-(*ListPlot[Table[{t,ensembleAverageReward[#][[t]]},{t,steps}]&/@{0,0.01,0.1}]*)
-(*ListPlot[Table[{t,ensembleOptimal[#][[t]]},{t,steps}]&/@{0,0.01,0.1}]*)
+(*ListPlot[Table[{t,ensembleAverageReward[#][[t]]},{t,steps}]&/@\[Epsilon]List]*)
+(*ListPlot[Table[{t,ensembleOptimal[#][[t]]},{t,steps}]&/@\[Epsilon]List]*)
