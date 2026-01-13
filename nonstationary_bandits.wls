@@ -15,13 +15,15 @@ estimatedMeans = ConstantArray[0, nBandits];
 totalRewards = ConstantArray[0, nBandits];
 actionCounts = ConstantArray[0, nBandits];
 optimalActionCount = 0;
+runningTotal = 0;
 {averageReward, optimalRatio} = Reap[Do[greedyChoice = FirstPosition[estimatedMeans, Max[estimatedMeans]];
 choice = If[RandomReal[] < \[Epsilon], RandomInteger[{1, nBandits}], greedyChoice];
 actionCounts[[choice]] += 1;
 reward = bandits[[choice]] + RandomVariate[NormalDistribution[]];
 totalRewards[[choice]] += reward;
+runningTotal += reward;
 estimatedMeans[[choice]] = totalRewards[[choice]] / actionCounts[[choice]];
-Sow[Total[totalRewards] / t, "average"];
+Sow[runningTotal / t, "average"];
 optimalBandit = FirstPosition[bandits, Max[bandits]][[1]];
 If[choice == optimalBandit, optimalActionCount += 1];
 Sow[optimalActionCount / t, "optimal"];
@@ -34,6 +36,3 @@ ensembleOptimalRatio /= runs, {r, t}]
 
 ListPlot[Table[{t, ensembleAverageRewards[[t]]}, {t, timeSteps}]]
 ListPlot[Table[{t, ensembleOptimalRatio[[t]]}, {t, timeSteps}]]
-
-
-
