@@ -9,7 +9,6 @@ CONFIG = {
     'n_bandits': 10,
     'time_steps': 1000,
     'runs': 2000,
-    'epsilon': 0.01,
     'epsilon_list': [0, 0.01, 0.1],
     'progress_interval': 100,
 }
@@ -35,6 +34,7 @@ for epsilon in epsilon_list:
         optimal_bandit = bandit_means.argmax()
         average_reward = []
         optimal_ratio = []
+        running_total = 0
 
         for t in range(time_steps):
             greedy_choice = estimated_means.argmax()
@@ -46,8 +46,9 @@ for epsilon in epsilon_list:
             action_counts[action] += 1
             reward = bandit_means[action] + np.random.randn()  # Reward ~ N(q*(a), 1)
             total_rewards[action] += reward
+            running_total += reward
             estimated_means[action] = total_rewards[action] / action_counts[action]  # Sample average
-            average_reward.append(total_rewards.sum() / (t + 1))  # Cumulative average reward
+            average_reward.append(running_total / (t + 1))  # Cumulative average reward
             optimal_ratio.append(action_counts[optimal_bandit] / (t + 1))  # Fraction of optimal actions
 
         ensemble_average_rewards.append(average_reward)
