@@ -30,7 +30,6 @@ for run in range(runs):
 
     bandit_means = np.zeros(n_bandits)
     estimated_means = np.zeros(n_bandits)
-    total_rewards = np.zeros(n_bandits)
     action_counts = np.zeros(n_bandits)
     average_reward = []
     optimal_ratio = []
@@ -45,9 +44,8 @@ for run in range(runs):
             action = greedy_action
         action_counts[action] += 1
         reward = bandit_means[action] + np.random.randn()
-        total_rewards[action] += reward
         running_total += reward
-        estimated_means[action] = total_rewards[action] / action_counts[action]
+        estimated_means[action] = estimated_means[action] + (reward - estimated_means[action]) / action_counts[action]
         average_reward.append(running_total / (t + 1))
         optimal_bandit = bandit_means.argmax()
         if action == optimal_bandit:
@@ -103,10 +101,18 @@ for run in range(runs):
 exponential_average_rewards = np.array(exponential_average_rewards).mean(axis=0)
 exponential_optimal_ratio = np.array(exponential_optimal_ratio).mean(axis=0)
 
-plt.plot(range(1, time_steps+1), sample_average_rewards)
-plt.plot(range(1, time_steps+1), exponential_average_rewards)
+plt.plot(range(1, time_steps+1), sample_average_rewards, label='sample average')
+plt.plot(range(1, time_steps+1), exponential_average_rewards, label='exponential average')
+plt.xlabel('steps')
+plt.ylabel('average reward')
+plt.title(f'average performance of different averaging methods')
+plt.legend()
 plt.show()
 
-plt.plot(range(2, time_steps+1), sample_average_optimal_ratio[1:])
-plt.plot(range(2, time_steps+1), exponential_optimal_ratio[1:])
+plt.plot(range(2, time_steps+1), sample_average_optimal_ratio[1:], label='sample average')
+plt.plot(range(2, time_steps+1), exponential_optimal_ratio[1:], label='exponential average')
+plt.xlabel('steps')
+plt.ylabel('optimal action ratio')
+plt.title(f'average fraction methods chose optimal action')
+plt.legend()
 plt.show()
