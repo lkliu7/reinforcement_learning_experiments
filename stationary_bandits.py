@@ -29,7 +29,6 @@ for epsilon in epsilon_list:
         # Each bandit has a reward drawn from N(q*(a), 1) where q*(a) ~ N(0, 1)
         bandit_means = np.random.randn(n_bandits)
         estimated_means = np.zeros(n_bandits)
-        total_rewards = np.zeros(n_bandits)
         action_counts = np.zeros(n_bandits)
         optimal_bandit = bandit_means.argmax()
         average_reward = []
@@ -45,9 +44,8 @@ for epsilon in epsilon_list:
                 action = greedy_choice  # Exploit
             action_counts[action] += 1
             reward = bandit_means[action] + np.random.randn()  # Reward ~ N(q*(a), 1)
-            total_rewards[action] += reward
             running_total += reward
-            estimated_means[action] = total_rewards[action] / action_counts[action]  # Sample average
+            estimated_means[action] = estimated_means[action] + (reward - estimated_means[action]) / action_counts[action]  # Sample average
             average_reward.append(running_total / (t + 1))  # Cumulative average reward
             optimal_ratio.append(action_counts[optimal_bandit] / (t + 1))  # Fraction of optimal actions
 
