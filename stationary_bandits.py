@@ -24,8 +24,8 @@ bias = CONFIG['bias']
 cumulative_average_rewards = {}
 cumulative_optimal_frequency = {}
 for epsilon in epsilon_list:
-    ensemble_average_rewards = []
-    ensemble_optimal_frequency = []
+    ensemble_average_rewards = np.zeros(time_steps)
+    ensemble_optimal_frequency = np.zeros(time_steps)
 
     for run in range(runs):
         # Each bandit has a reward drawn from N(q*(a), 1) where q*(a) ~ N(0, 1)
@@ -54,16 +54,14 @@ for epsilon in epsilon_list:
             else:
                 optimal_actions.append(0)
 
-        ensemble_average_rewards.append(rewards)
-        ensemble_optimal_frequency.append(optimal_actions)
+        ensemble_average_rewards += np.array(rewards)
+        ensemble_optimal_frequency += np.array(optimal_actions)
         if run % progress_interval == progress_interval - 1:
             print(f'Completed run {run + 1}.')
 
     # Average performance across all runs for this epsilon value
-    ensemble_average_rewards = np.array(ensemble_average_rewards)
-    cumulative_average_rewards[epsilon] = np.sum(ensemble_average_rewards, axis=0) / runs
-    ensemble_optimal_frequency = np.array(ensemble_optimal_frequency)
-    cumulative_optimal_frequency[epsilon] = np.sum(ensemble_optimal_frequency, axis=0) / runs
+    cumulative_average_rewards[epsilon] = ensemble_average_rewards / runs
+    cumulative_optimal_frequency[epsilon] = ensemble_optimal_frequency / runs
 
 for epsilon in epsilon_list:
     plt.plot(range(1, time_steps+1), cumulative_average_rewards[epsilon], label=f'epsilon = {epsilon}')
