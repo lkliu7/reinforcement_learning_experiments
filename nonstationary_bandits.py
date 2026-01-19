@@ -67,7 +67,6 @@ for run in range(runs):
 
     bandit_means = np.zeros(n_bandits)
     estimated_means = np.zeros(n_bandits)
-    action_counts = np.zeros(n_bandits)
     rewards = []
     optimal_actions = []
 
@@ -77,7 +76,6 @@ for run in range(runs):
             action = np.random.randint(n_bandits)
         else:
             action = greedy_action
-        action_counts[action] += 1
         reward = bandit_means[action] + np.random.randn()
         estimated_means[action] = estimated_means[action] + step_size * (reward - estimated_means[action])
         rewards.append(reward)
