@@ -14,27 +14,23 @@ meanDrift = 0.01;
 
 
 Monitor[sampleAverageRewards = ConstantArray[0, timeSteps];
-sampleOptimalRatio = ConstantArray[0, timeSteps];
+sampleOptimalFrequency = ConstantArray[0, timeSteps];
 Do[bandits = ConstantArray[0, nBandits];
 estimatedMeans = ConstantArray[0, nBandits];
 actionCounts = ConstantArray[0, nBandits];
-optimalActionCount = 0;
-runningTotal = 0;
-{averageReward, optimalRatio} = Reap[Do[greedyAction = FirstPosition[estimatedMeans, Max[estimatedMeans]][[1]];
+{rewards, optimalAction} = Reap[Do[greedyAction = FirstPosition[estimatedMeans, Max[estimatedMeans]][[1]];
 action = If[RandomReal[] < \[Epsilon], RandomInteger[{1, nBandits}], greedyAction];
 actionCounts[[action]] += 1;
 reward = bandits[[action]] + RandomVariate[NormalDistribution[]];
-runningTotal += reward;
 estimatedMeans[[action]] = estimatedMeans[[action]] + (reward - estimatedMeans[[action]]) / actionCounts[[action]];
-Sow[runningTotal / t, "average"];
+Sow[reward, "reward"];
 optimalBandit = FirstPosition[bandits, Max[bandits]][[1]];
-If[action == optimalBandit, optimalActionCount += 1];
-Sow[optimalActionCount / t, "optimal"];
-bandits += RandomVariate[NormalDistribution[0, meanDrift], nBandits], {t, timeSteps}], {"average", "optimal"}][[2, All, 1]];
-sampleAverageRewards += averageReward;
-sampleOptimalRatio += optimalRatio, {r, runs}];
+Sow[If[action == optimalBandit, 1, 0], "optimal"];
+bandits += RandomVariate[NormalDistribution[0, meanDrift], nBandits], {t, timeSteps}], {"reward", "optimal"}][[2, All, 1]];
+sampleAverageRewards += rewards;
+sampleOptimalFrequency += optimalAction, {r, runs}];
 sampleAverageRewards /= runs;
-sampleOptimalRatio /= runs, {r, t}]
+sampleOptimalFrequency /= runs, {r}];
 
 
 (* ::Section:: *)
@@ -42,27 +38,23 @@ sampleOptimalRatio /= runs, {r, t}]
 
 
 Monitor[exponentialAverageRewards = ConstantArray[0, timeSteps];
-exponentialOptimalRatio = ConstantArray[0, timeSteps];
+exponentialOptimalFrequency = ConstantArray[0, timeSteps];
 Do[bandits = ConstantArray[0, nBandits];
 estimatedMeans = ConstantArray[0, nBandits];
 actionCounts = ConstantArray[0, nBandits];
-optimalActionCount = 0;
-runningTotal = 0;
-{averageReward, optimalRatio} = Reap[Do[greedyAction = FirstPosition[estimatedMeans, Max[estimatedMeans]][[1]];
+{rewards, optimalAction} = Reap[Do[greedyAction = FirstPosition[estimatedMeans, Max[estimatedMeans]][[1]];
 action = If[RandomReal[] < \[Epsilon], RandomInteger[{1, nBandits}], greedyAction];
 actionCounts[[action]] += 1;
 reward = bandits[[action]] + RandomVariate[NormalDistribution[]];
-runningTotal += reward;
 estimatedMeans[[action]] = estimatedMeans[[action]] + \[Alpha] (reward - estimatedMeans[[action]]);
-Sow[runningTotal / t, "average"];
+Sow[reward, "reward"];
 optimalBandit = FirstPosition[bandits, Max[bandits]][[1]];
-If[action == optimalBandit, optimalActionCount += 1];
-Sow[optimalActionCount / t, "optimal"];
-bandits += RandomVariate[NormalDistribution[0, meanDrift], nBandits], {t, timeSteps}], {"average", "optimal"}][[2, All, 1]];
-exponentialAverageRewards += averageReward;
-exponentialOptimalRatio += optimalRatio, {r, runs}];
+Sow[If[action == optimalBandit, 1, 0], "optimal"];
+bandits += RandomVariate[NormalDistribution[0, meanDrift], nBandits], {t, timeSteps}], {"reward", "optimal"}][[2, All, 1]];
+exponentialAverageRewards += rewards;
+exponentialOptimalFrequency += optimalAction, {r, runs}];
 exponentialAverageRewards /= runs;
-exponentialOptimalRatio /= runs, {r, t}]
+exponentialOptimalFrequency /= runs, {r}];
 
 
 (* ::Section:: *)
@@ -70,8 +62,7 @@ exponentialOptimalRatio /= runs, {r, t}]
 
 
 ListPlot[{Table[{t, sampleAverageRewards[[t]]}, {t, timeSteps}],Table[{t, exponentialAverageRewards[[t]]}, {t, timeSteps}]}]
-ListPlot[{Table[{t, sampleOptimalRatio[[t]]}, {t, 2, timeSteps}],Table[{t, exponentialOptimalRatio[[t]]}, {t, 2, timeSteps}]}]
-
+ListPlot[{Table[{t, sampleOptimalFrequency[[t]]}, {t, 2, timeSteps}],Table[{t, exponentialOptimalFrequency[[t]]}, {t, 2, timeSteps}]}]
 
 
 
