@@ -2,7 +2,6 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 CONFIG = {
     'n_bandits': 10,
     'time_steps': 10000,
@@ -23,18 +22,16 @@ step_size = CONFIG['step_size']
 
 # MARK: Sample average
 
-sample_average_rewards = []
-sample_average_optimal_ratio = []
+sample_average_rewards = np.zeros(time_steps)
+sample_average_optimal_frequency = np.zeros(time_steps)
 
 for run in range(runs):
 
     bandit_means = np.zeros(n_bandits)
     estimated_means = np.zeros(n_bandits)
     action_counts = np.zeros(n_bandits)
-    average_reward = []
-    optimal_ratio = []
-    optimal_action_count = 0
-    running_total = 0
+    rewards = []
+    optimal_actions = []
 
     for t in range(time_steps):
         greedy_action = estimated_means.argmax()
@@ -44,37 +41,35 @@ for run in range(runs):
             action = greedy_action
         action_counts[action] += 1
         reward = bandit_means[action] + np.random.randn()
-        running_total += reward
         estimated_means[action] = estimated_means[action] + (reward - estimated_means[action]) / action_counts[action]
-        average_reward.append(running_total / (t + 1))
+        rewards.append(reward)
         optimal_bandit = bandit_means.argmax()
         if action == optimal_bandit:
-            optimal_action_count += 1
-        optimal_ratio.append(optimal_action_count / (t + 1))
+            optimal_actions.append(1)
+        else:
+            optimal_actions.append(0)
         bandit_means += np.random.randn(n_bandits) * mean_drift
 
-    sample_average_rewards.append(average_reward)
-    sample_average_optimal_ratio.append(optimal_ratio)
+    sample_average_rewards += np.array(rewards)
+    sample_average_optimal_frequency += np.array(optimal_actions)
     if run % progress_interval == progress_interval - 1:
         print(f'Completed run {run + 1}.')
 
-sample_average_rewards = np.array(sample_average_rewards).mean(axis=0)
-sample_average_optimal_ratio = np.array(sample_average_optimal_ratio).mean(axis=0)
+sample_average_rewards /= runs
+sample_average_optimal_frequency /= runs
 
 # MARK: Exponential recency-weighted average
 
-exponential_average_rewards = []
-exponential_optimal_ratio = []
+exponential_average_rewards = np.zeros(time_steps)
+exponential_optimal_frequency = np.zeros(time_steps)
 
 for run in range(runs):
 
     bandit_means = np.zeros(n_bandits)
     estimated_means = np.zeros(n_bandits)
     action_counts = np.zeros(n_bandits)
-    average_reward = []
-    optimal_ratio = []
-    optimal_action_count = 0
-    running_total = 0
+    rewards = []
+    optimal_actions = []
 
     for t in range(time_steps):
         greedy_action = estimated_means.argmax()
@@ -84,22 +79,22 @@ for run in range(runs):
             action = greedy_action
         action_counts[action] += 1
         reward = bandit_means[action] + np.random.randn()
-        running_total += reward
         estimated_means[action] = estimated_means[action] + step_size * (reward - estimated_means[action])
-        average_reward.append(running_total / (t + 1))
+        rewards.append(reward)
         optimal_bandit = bandit_means.argmax()
         if action == optimal_bandit:
-            optimal_action_count += 1
-        optimal_ratio.append(optimal_action_count / (t + 1))
+            optimal_actions.append(1)
+        else:
+            optimal_actions.append(0)
         bandit_means += np.random.randn(n_bandits) * mean_drift
 
-    exponential_average_rewards.append(average_reward)
-    exponential_optimal_ratio.append(optimal_ratio)
+    exponential_average_rewards += np.array(rewards)
+    exponential_optimal_frequency += np.array(optimal_actions)
     if run % progress_interval == progress_interval - 1:
         print(f'Completed run {run + 1}.')
 
-exponential_average_rewards = np.array(exponential_average_rewards).mean(axis=0)
-exponential_optimal_ratio = np.array(exponential_optimal_ratio).mean(axis=0)
+exponential_average_rewards /= runs
+exponential_optimal_frequency /= runs
 
 plt.plot(range(1, time_steps+1), sample_average_rewards, label='sample average')
 plt.plot(range(1, time_steps+1), exponential_average_rewards, label='exponential average')
@@ -109,8 +104,8 @@ plt.title(f'average performance of different averaging methods')
 plt.legend()
 plt.show()
 
-plt.plot(range(2, time_steps+1), sample_average_optimal_ratio[1:], label='sample average')
-plt.plot(range(2, time_steps+1), exponential_optimal_ratio[1:], label='exponential average')
+plt.plot(range(2, time_steps+1), sample_average_optimal_frequency[1:], label='sample average')
+plt.plot(range(2, time_steps+1), exponential_optimal_frequency[1:], label='exponential average')
 plt.xlabel('steps')
 plt.ylabel('optimal action ratio')
 plt.title(f'average fraction methods chose optimal action')
