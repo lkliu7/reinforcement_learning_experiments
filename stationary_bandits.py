@@ -35,7 +35,6 @@ for epsilon in epsilon_list:
         optimal_bandit = bandit_means.argmax()
         rewards = []
         optimal_actions = []
-        running_total = 0
 
         for t in range(time_steps):
             greedy_choice = estimated_means.argmax()
@@ -46,7 +45,6 @@ for epsilon in epsilon_list:
                 action = greedy_choice  # Exploit
             action_counts[action] += 1
             reward = bandit_means[action] + np.random.randn()  # Reward ~ N(q*(a), 1)
-            running_total += reward
             estimated_means[action] = estimated_means[action] + (reward - estimated_means[action]) / action_counts[action]  # Sample average
             rewards.append(reward)  # Record of all rewards
             if action == optimal_bandit:
