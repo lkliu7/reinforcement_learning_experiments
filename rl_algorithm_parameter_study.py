@@ -5,17 +5,15 @@ from greedy_agent import GreedyAgent
 from ucb_agent import UCBAgent
 from gradient_agent import GradientAgent
 
-# Experiment configuration
 CONFIG = {
-    'n_bandits': 10,  # Number of bandit arms
-    'time_steps': 1000,  # Steps per experimental run
-    'runs': 2000,  # Number of independent runs to average over
-    'epsilon_values': [1/128, 1/64, 1/32, 1/16, 1/8, 1/4],  # Probability of random exploration (epsilon-greedy)
+    'n_bandits': 10,
+    'time_steps': 1000,
+    'runs': 2000,
+    'epsilon_values': [1/128, 1/64, 1/32, 1/16, 1/8, 1/4],
     'gradient_bandit_step_sizes': [1/32, 1/16, 1/8, 1/4, 1/2, 1, 2, 4],
     'ucb_c_values': [1/16, 1/8, 1/4, 1/2, 1, 2, 4],
     'greedy_optimistic_initial_values': [1/4, 1/2, 1, 2, 4],
-    'progress_interval': 500,  # How often to print progress updates
-    'constant_step_size': 0.1,  # Fixed step size for exponential averaging
+    'progress_interval': 500,
 }
 
 n_bandits = CONFIG['n_bandits']
@@ -31,40 +29,30 @@ def run_bandit_experiment(agent, n_bandits = n_bandits,
                           mean_drift = 0,  # 0 = stationary, >0 = nonstationary
                           time_steps = time_steps, runs = runs,
                           progress_interval = progress_interval):
-
-    # Accumulate results across all runs
+    """Run bandit experiment across multiple independent runs and return average reward."""
     bandit = Bandit(n_bandits=n_bandits, mean_drift=mean_drift)
     average_rewards_across_runs = 0
 
     for run in range(runs):
-
-        # Initialize each run
         agent.reset()
-        total_rewards = 0  # Track rewards for this run
+        total_rewards = 0
 
         for t in range(time_steps):
-            # Epsilon-greedy action selection
             action = agent.action()
-
-            # Generate reward: true mean + unit normal noise
             reward = bandit.pull(action)
-
-            # Update value estimate using incremental formula:
-            # Q_new = Q_old + step_size * (reward - Q_old)
             agent.update(reward, action)
-
             total_rewards += reward
-        
-        bandit.reset()
 
+        bandit.reset()
         average_rewards_across_runs += total_rewards / time_steps
+
         if run % progress_interval == progress_interval - 1:
             print(f'Completed run {run + 1}.')
 
-    # Average results across all runs
     average_rewards_across_runs /= runs
     return average_rewards_across_runs
 
+# Run parameter sweeps for each algorithm
 epsilon_greedy_average_rewards = {}
 greedy_optimistic_average_rewards = {}
 ucb_average_rewards = {}
@@ -74,14 +62,17 @@ for epsilon in epsilon_values:
     print(f'epsilon = {epsilon}')
     agent = GreedyAgent(actions=n_bandits, epsilon=epsilon)
     epsilon_greedy_average_rewards[epsilon] = run_bandit_experiment(agent=agent)
+
 for value in greedy_optimistic_initial_values:
     print(f'initialization = {value}')
     agent = GreedyAgent(actions=n_bandits, initial_estimate=value, step_size=0.1)
     greedy_optimistic_average_rewards[value] = run_bandit_experiment(agent=agent)
+
 for c in ucb_c_values:
     print(f'c = {c}')
     agent = UCBAgent(actions=n_bandits, c=c)
     ucb_average_rewards[c] = run_bandit_experiment(agent=agent)
+
 for alpha in gradient_bandit_step_sizes:
     print(f'alpha = {alpha}')
     agent = GradientAgent(actions=n_bandits, alpha=alpha)
