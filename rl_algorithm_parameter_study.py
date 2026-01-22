@@ -1,6 +1,7 @@
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+from bandit import Bandit
 
 # Experiment configuration
 CONFIG = {
@@ -45,12 +46,12 @@ def run_bandit_experiment(n_bandits = n_bandits,
                           progress_interval = progress_interval):
 
     # Accumulate results across all runs
+    bandit = Bandit(n_bandits=n_bandits, mean_drift=mean_drift)
     average_rewards_across_runs = 0
 
     for run in range(runs):
 
         # Initialize each run
-        bandit_means = np.random.randn(n_bandits)  # True reward means (unknown to agent)
         estimated_means = np.zeros(n_bandits) + initial_estimate  # Agent's estimates
         action_counts = np.zeros(n_bandits)  # Count of times each arm was pulled
         total_rewards = 0  # Track rewards for this run
@@ -66,16 +67,15 @@ def run_bandit_experiment(n_bandits = n_bandits,
             action_counts[action] += 1
 
             # Generate reward: true mean + unit normal noise
-            reward = bandit_means[action] + np.random.randn()
+            reward = bandit.pull(action)
 
             # Update value estimate using incremental formula:
             # Q_new = Q_old + step_size * (reward - Q_old)
             estimated_means[action] = estimated_means[action] + (reward - estimated_means[action]) * get_step_size(step_size, action_counts[action])
 
             total_rewards += reward
-
-            # Nonstationary environment: bandit means undergo random walk
-            bandit_means += np.random.randn(n_bandits) * mean_drift
+        
+        bandit.reset()
 
         average_rewards_across_runs += total_rewards / time_steps
         if run % progress_interval == progress_interval - 1:
@@ -93,12 +93,12 @@ def run_bandit_experiment_ucb(n_bandits = n_bandits,
                           progress_interval = progress_interval):
 
     # Accumulate results across all runs
+    bandit = Bandit(n_bandits=n_bandits, mean_drift=mean_drift)
     average_rewards_across_runs = 0
 
     for run in range(runs):
 
         # Initialize each run
-        bandit_means = np.random.randn(n_bandits)  # True reward means (unknown to agent)
         estimated_means = np.zeros(n_bandits) + initial_estimate  # Agent's estimates
         action_counts = np.zeros(n_bandits)  # Count of times each arm was pulled
         total_rewards = 0  # Track rewards for this run
@@ -111,16 +111,15 @@ def run_bandit_experiment_ucb(n_bandits = n_bandits,
             action_counts[action] += 1
 
             # Generate reward: true mean + unit normal noise
-            reward = bandit_means[action] + np.random.randn()
+            reward = bandit.pull(action)
 
             # Update value estimate using incremental formula:
             # Q_new = Q_old + step_size * (reward - Q_old)
             estimated_means[action] = estimated_means[action] + (reward - estimated_means[action]) * get_step_size(step_size, action_counts[action])
 
             total_rewards += reward
-
-            # Nonstationary environment: bandit means undergo random walk
-            bandit_means += np.random.randn(n_bandits) * mean_drift
+        
+        bandit.reset()
 
         average_rewards_across_runs += total_rewards / time_steps
         if run % progress_interval == progress_interval - 1:
@@ -138,12 +137,12 @@ def run_bandit_experiment_grad(n_bandits = n_bandits,
                           progress_interval = progress_interval):
 
     # Accumulate results across all runs
+    bandit = Bandit(n_bandits=n_bandits, mean_drift=mean_drift)
     average_rewards_across_runs = 0
 
     for run in range(runs):
 
         # Initialize each run
-        bandit_means = np.random.randn(n_bandits)  # True reward means (unknown to agent)
         estimated_mean = 0  # Agent's estimates
         action_counts = np.zeros(n_bandits)  # Count of times each arm was pulled
         H = np.zeros(n_bandits) # Preference vector
@@ -161,7 +160,7 @@ def run_bandit_experiment_grad(n_bandits = n_bandits,
             action_counts[action] += 1
 
             # Generate reward: true mean + unit normal noise
-            reward = bandit_means[action] + np.random.randn()
+            reward = bandit.pull(action)
 
             # Update value estimate using incremental formula:
             # Q_new = Q_old + step_size * (reward - Q_old)
@@ -170,6 +169,8 @@ def run_bandit_experiment_grad(n_bandits = n_bandits,
             H += step_size * (reward - include_baseline * estimated_mean) * (action_vec - dist)
 
             total_rewards += reward
+        
+        bandit.reset()
 
         average_rewards_across_runs += total_rewards / time_steps
         if run % progress_interval == progress_interval - 1:
