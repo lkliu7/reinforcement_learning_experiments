@@ -1,18 +1,11 @@
 import numpy as np
-
-def get_step_size(step_size_param, n):
-    """Returns step size for value updates.
-
-    Args:
-        step_size_param: Either a function (for sample averaging: 1/n) or constant
-        n: Action count for this bandit arm
-    """
-    if callable(step_size_param):
-        return step_size_param(n)
-    else:
-        return step_size_param
     
 class GradientAgent:
+    """Gradient bandit agent using softmax action probabilities.
+
+    Maintains preference values (H) for each action and uses gradient ascent
+    to update preferences based on rewards relative to a baseline.
+    """
     def __init__(self, actions, 
                  alpha, # step size or learning rate
                  include_baseline=True):
@@ -22,17 +15,12 @@ class GradientAgent:
 
         self.estimated_mean = 0
         self.action_counts = np.zeros(actions)
-        self.t = 0 # internal time
-        self.H = np.zeros(actions) # preference vector
-        self.dist = np.ones(actions) / actions
+        self.t = 0  # Internal time step counter
+        self.H = np.zeros(actions)  # Action preferences (logits)
 
     def action(self):
-        self.H = self.H - np.max(self.H)
-        dist = np.exp(self.H)
-        dist = dist / np.sum(dist)
-        action = np.random.choice(range(self.actions), p=dist)
+        action = np.random.choice(range(self.actions), p=self.dist)
         self.most_recent_action = action
-        self.dist = dist
         return action
 
     def update(self, reward, action=None):
@@ -40,13 +28,23 @@ class GradientAgent:
             action = self.most_recent_action
         self.t += 1
         self.action_counts[action] += 1
+        # Update running average of all rewards (baseline)
         self.estimated_mean += (reward - self.estimated_mean) / self.t
+        # One-hot encoding of selected action
         action_vec = np.eye(self.actions)[action]
+        # Gradient ascent on preferences: increase H for chosen action if reward > baseline
         self.H += self.alpha * (reward - self.include_baseline * self.estimated_mean) * (action_vec - self.dist)
+        # Normalize to keep max preference at 0 for numerical stability
+        self.H = self.H - np.max(self.H)
 
     def reset(self):
         self.estimated_mean = 0
         self.action_counts = np.zeros(self.actions)
         self.t = 0
         self.H = np.zeros(self.actions)
-        self.dist = np.ones(self.actions) / self.actions
+
+    @property
+    def dist(self):
+        """Compute softmax probabilities from current preferences."""
+        softmax = np.exp(self.H)
+        return softmax / np.sum(softmax)
