@@ -31,7 +31,8 @@ class GradientAgent:
         # Update running average of all rewards (baseline)
         self.estimated_mean += (reward - self.estimated_mean) / self.t
         # One-hot encoding of selected action
-        action_vec = np.eye(self.actions)[action]
+        action_vec = np.zeros(self.actions)
+        action_vec[action] = 1
         # Gradient ascent on preferences: increase H for chosen action if reward > baseline
         self.H += self.alpha * (reward - self.include_baseline * self.estimated_mean) * (action_vec - self.dist)
         # Normalize to keep max preference at 0 for numerical stability
