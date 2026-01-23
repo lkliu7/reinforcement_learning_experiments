@@ -2,6 +2,9 @@ from bandit import Bandit
 from greedy_agent import GreedyAgent, sample_average_step_size
 from experiment_utils import run_experiment, plot_performance
 
+# Sutton and Barto, Exercise 2.5: Nonstationary bandit problem
+# Compare sample averaging vs exponential recency-weighted averaging
+
 # Experiment configuration
 CONFIG = {
     'n_bandits': 10,
