@@ -1,14 +1,13 @@
-import random
-import numpy as np
-import matplotlib.pyplot as plt
+from bandit import Bandit
+from gradient_agent import GradientAgent
+from experiment_utils import run_experiment, plot_performance
 
 # Experiment configuration
 CONFIG = {
-    'n_bandits': 10,  # Number of bandit arms
-    'time_steps': 1000,  # Steps per experimental run
-    'runs': 2000,  # Number of independent runs to average over
-    'progress_interval': 100,  # How often to print progress updates
-    'constant_step_size': 0.1,  # Step-size parameter
+    'n_bandits': 10,
+    'time_steps': 1000,
+    'runs': 2000,
+    'progress_interval': 100,
     'bandit_mean_baseline': 4,
 }
 
@@ -16,92 +15,32 @@ n_bandits = CONFIG['n_bandits']
 time_steps = CONFIG['time_steps']
 runs = CONFIG['runs']
 progress_interval = CONFIG['progress_interval']
-constant_step_size = CONFIG['constant_step_size']
 bandit_mean_baseline = CONFIG['bandit_mean_baseline']
 
-def get_step_size(step_size_param, n):
-    """Returns step size for value updates.
+results = {}
 
-    Args:
-        step_size_param: Either a function (for sample averaging: 1/n) or constant
-        n: Action count for this bandit arm
-    """
-    if callable(step_size_param):
-        return step_size_param(n)
-    else:
-        return step_size_param
-
-ensemble_total_rewards = {}
-ensemble_optimal_actions = {}
-
+# Test gradient bandit with different alpha values and baseline settings
 for alpha in [0.1, 0.4]:
     for include_baseline in [True, False]:
+        print(f"Running gradient bandit with alpha={alpha}, baseline={include_baseline}")
 
-        total_rewards = np.zeros(time_steps)
-        total_optimal_actions = np.zeros(time_steps)
+        # Create bandit environment
+        bandit = Bandit(n_bandits=n_bandits,
+                       mean_baseline=bandit_mean_baseline,
+                       mean_std=1,
+                       reward_std=1)
 
-        for run in range(runs):
+        # Create gradient bandit agent
+        agent = GradientAgent(actions=n_bandits,
+                             alpha=alpha,
+                             include_baseline=include_baseline)
 
-            # Initialize each run
-            bandit_means = np.random.randn(n_bandits) + bandit_mean_baseline  # True reward means (unknown to agent)
-            optimal_bandit = bandit_means.argmax()
-            estimated_mean = 0 # Agent's estimate
-            action_counts = np.zeros(n_bandits)  # Count of times each arm was pulled
-            H = np.zeros(n_bandits) # Preference vector
-            rewards = []  # Track rewards for this run
-            optimal_actions = []  # Track whether optimal action was chosen
+        # Run experiment
+        rewards, optimal_actions = run_experiment(bandit, agent, time_steps, runs, progress_interval)
 
-            for t in range(time_steps):
-                H = H - np.max(H)
-                dist = np.exp(H)
-                dist = dist / np.sum(dist)
+        # Store results
+        label = f'alpha={alpha}, baseline={include_baseline}'
+        results[label] = (rewards, optimal_actions)
 
-                action = np.random.choice(range(n_bandits), p=dist)
-                action_vec = np.eye(n_bandits)[action]
-
-                action_counts[action] += 1
-
-                # Generate reward: true mean + unit normal noise
-                reward = bandit_means[action] + np.random.randn()
-                rewards.append(reward)
-                
-                # Update value estimate using incremental formula
-                estimated_mean = estimated_mean + (reward - estimated_mean) / (t + 1)
-
-                H += alpha * (reward - include_baseline * estimated_mean) * (action_vec - dist)
-
-                # Track if we chose the optimal action
-                if action == optimal_bandit:
-                    optimal_actions.append(1)
-                else:
-                    optimal_actions.append(0)
-
-            total_rewards += np.array(rewards)
-            total_optimal_actions += np.array(optimal_actions)
-            if run % progress_interval == progress_interval - 1:
-                print(f'Completed run {run + 1}.')
-
-        # Average results across all runs
-        total_rewards /= runs
-        total_optimal_actions /= runs
-
-        ensemble_total_rewards[(alpha, include_baseline)] = total_rewards
-        ensemble_optimal_actions[(alpha, include_baseline)] = total_optimal_actions
-
-for alpha in [0.1, 0.4]:
-    for include_baseline in [True, False]:
-        plt.plot(range(1, time_steps+1), ensemble_total_rewards[(alpha, include_baseline)], label=f'gradient bandit with alpha = {alpha}, with baseline = {include_baseline}')
-plt.xlabel('steps')
-plt.ylabel('average reward')
-plt.title(f'')
-plt.legend()
-plt.show()
-
-for alpha in [0.1, 0.4]:
-    for include_baseline in [True, False]:
-        plt.plot(range(1, time_steps+1), ensemble_optimal_actions[(alpha, include_baseline)], label=f'gradient bandit with alpha = {alpha}, with baseline = {include_baseline}')
-plt.xlabel('steps')
-plt.ylabel('optimal action ratio')
-plt.title(f'')
-plt.legend()
-plt.show()
+# Plot results
+plot_performance(results, title_prefix="Gradient Bandit")
