@@ -1,10 +1,8 @@
-import random
-import numpy as np
-import matplotlib.pyplot as plt
+from bandit import Bandit
+from greedy_agent import GreedyAgent
+from experiment_utils import run_experiment, plot_performance
 
-# 10-armed testbed experiment: compares epsilon-greedy methods with different exploration rates
-
-# MARK: Configuration
+# Experiment configuration
 CONFIG = {
     'n_bandits': 10,
     'time_steps': 1000,
@@ -21,58 +19,23 @@ epsilon_list = CONFIG['epsilon_list']
 progress_interval = CONFIG['progress_interval']
 bias = CONFIG['bias']
 
-cumulative_average_rewards = {}
-cumulative_optimal_frequency = {}
+results = {}
+
+# Test epsilon-greedy methods with different exploration rates
 for epsilon in epsilon_list:
-    ensemble_average_rewards = np.zeros(time_steps)
-    ensemble_optimal_frequency = np.zeros(time_steps)
+    print(f"Running epsilon-greedy with epsilon={epsilon}")
 
-    for run in range(runs):
-        # Each bandit has a reward drawn from N(q*(a), 1) where q*(a) ~ N(0, 1)
-        bandit_means = np.random.randn(n_bandits)
-        estimated_means = np.zeros(n_bandits) + bias
-        action_counts = np.zeros(n_bandits)
-        optimal_bandit = bandit_means.argmax()
-        rewards = []
-        optimal_actions = []
+    # Create stationary bandit environment
+    bandit = Bandit(n_bandits=n_bandits, mean_baseline=0, mean_std=1, reward_std=1)
 
-        for t in range(time_steps):
-            greedy_choice = estimated_means.argmax()
-            # Epsilon-greedy action selection
-            if random.random() < epsilon:
-                action = np.random.randint(n_bandits)  # Explore
-            else:
-                action = greedy_choice  # Exploit
-            action_counts[action] += 1
-            reward = bandit_means[action] + np.random.randn()  # Reward ~ N(q*(a), 1)
-            estimated_means[action] = estimated_means[action] + (reward - estimated_means[action]) / action_counts[action]  # Sample average
-            rewards.append(reward)  # Record of all rewards
-            if action == optimal_bandit:
-                optimal_actions.append(1)
-            else:
-                optimal_actions.append(0)
+    # Create epsilon-greedy agent
+    agent = GreedyAgent(actions=n_bandits, epsilon=epsilon, initial_estimate=bias)
 
-        ensemble_average_rewards += np.array(rewards)
-        ensemble_optimal_frequency += np.array(optimal_actions)
-        if run % progress_interval == progress_interval - 1:
-            print(f'Completed run {run + 1}.')
+    # Run experiment
+    rewards, optimal_actions = run_experiment(bandit, agent, time_steps, runs, progress_interval)
 
-    # Average performance across all runs for this epsilon value
-    cumulative_average_rewards[epsilon] = ensemble_average_rewards / runs
-    cumulative_optimal_frequency[epsilon] = ensemble_optimal_frequency / runs
+    # Store results
+    results[f'epsilon={epsilon}'] = (rewards, optimal_actions)
 
-for epsilon in epsilon_list:
-    plt.plot(range(1, time_steps+1), cumulative_average_rewards[epsilon], label=f'epsilon = {epsilon}')
-plt.xlabel('steps')
-plt.ylabel('average reward')
-plt.title(f'average performance of epsilon-greedy methods')
-plt.legend()
-plt.show()
-
-for epsilon in epsilon_list:
-    plt.plot(range(1, time_steps+1), cumulative_optimal_frequency[epsilon], label=f'epsilon = {epsilon}')
-plt.xlabel('steps')
-plt.ylabel('optimal action ratio')
-plt.title(f'average fraction epsilon-greedy methods chose optimal action')
-plt.legend()
-plt.show()
+# Plot results
+plot_performance(results, title_prefix="Epsilon-Greedy Comparison")
