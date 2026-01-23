@@ -3,6 +3,8 @@ from greedy_agent import GreedyAgent
 from ucb_agent import UCBAgent
 from experiment_utils import run_experiment, plot_performance
 
+# Replicate Sutton and Barto, Figure 2.4: Upper-Confidence-Bound Action Selection
+
 # Experiment configuration
 CONFIG = {
     'n_bandits': 10,
