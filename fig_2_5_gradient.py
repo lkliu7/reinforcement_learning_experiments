@@ -2,6 +2,8 @@ from bandit import Bandit
 from gradient_agent import GradientAgent
 from experiment_utils import run_experiment, plot_performance
 
+# Replicate Sutton and Barto, Figure 2.5: Gradient Bandit Algorithm
+
 # Experiment configuration
 CONFIG = {
     'n_bandits': 10,
