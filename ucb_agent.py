@@ -1,4 +1,3 @@
-import random
 import numpy as np
 
 def get_step_size(step_size_param, n):
@@ -13,18 +12,30 @@ def get_step_size(step_size_param, n):
     else:
         return step_size_param
     
+def sample_average_step_size(n):
+    return 1 / n
+    
 class UCBAgent:
-    def __init__(self, actions, c=1, step_size=lambda n:1/n):
+    """Upper Confidence Bound (UCB) bandit agent.
+
+    Selects actions based on upper confidence bounds that balance
+    estimated value and uncertainty due to limited sampling.
+    """
+    def __init__(self, actions, c=1, step_size=sample_average_step_size):
         self.actions = actions
         self.step_size = step_size
         self.c = c
 
         self.estimated_means = np.zeros(actions)
         self.action_counts = np.zeros(actions)
-        self.t = 0
+        self.t = 0  # Global time step counter
 
     def action(self):
-        ucb_values = np.where(self.action_counts > 0, self.estimated_means + self.c * np.sqrt(np.log(self.t + 1) / self.action_counts), np.inf)
+        # Calculate UCB values: mean + confidence interval
+        # Actions never taken get infinite confidence (np.inf)
+        ucb_values = np.where(self.action_counts > 0,
+                             self.estimated_means + self.c * np.sqrt(np.log(self.t + 1) / self.action_counts),
+                             np.inf)
         action = ucb_values.argmax()
         self.most_recent_action = action
         return action
@@ -34,6 +45,7 @@ class UCBAgent:
             action = self.most_recent_action
         self.t += 1
         self.action_counts[action] += 1
+        # Update action value estimate using incremental average
         self.estimated_means[action] = self.estimated_means[action] + (reward - self.estimated_means[action]) * get_step_size(self.step_size, self.action_counts[action])
 
     def reset(self):
