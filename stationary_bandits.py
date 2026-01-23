@@ -2,6 +2,8 @@ from bandit import Bandit
 from greedy_agent import GreedyAgent
 from experiment_utils import run_experiment, plot_performance
 
+# Replicate Sutton and Barto, Figure 2.2: 10-armed testbed comparing epsilon-greedy methods
+
 # Experiment configuration
 CONFIG = {
     'n_bandits': 10,
