@@ -12,7 +12,7 @@ CONFIG = {
     'n_bandits': 10,
     'warm_up': 0,
     'time_steps': 1000,
-    'runs': 10000,
+    'runs': 10,
     'epsilon_values': [1/128, 1/64, 1/32, 1/16, 1/8, 1/4],
     'gradient_bandit_step_sizes': [1/32, 1/16, 1/8, 1/4, 1/2, 1, 2, 4],
     'ucb_c_values': [1/16, 1/8, 1/4, 1/2, 1, 2, 4],
@@ -29,14 +29,10 @@ gradient_bandit_step_sizes = CONFIG['gradient_bandit_step_sizes']
 ucb_c_values = CONFIG['ucb_c_values']
 progress_interval = CONFIG['progress_interval']
         
-def run_bandit_experiment(agent, n_bandits = n_bandits,
-                          mean_baseline = 0, mean_std = 1, 
-                          mean_drift_std = 0,  # 0 = stationary, >0 = nonstationary
-                          warm_up = 0,
+def run_bandit_experiment(agent, bandit, warm_up = 0,
                           time_steps = time_steps, runs = runs,
                           progress_interval = progress_interval):
     """Run bandit experiment across multiple independent runs and return average reward."""
-    bandit = Bandit(n_bandits=n_bandits, mean_baseline=mean_baseline, mean_std=mean_std, mean_drift_std=mean_drift_std)
     average_rewards_across_runs = 0
 
     for run in range(runs):
@@ -66,17 +62,16 @@ def run_bandit_experiment(agent, n_bandits = n_bandits,
 def call_run_bandit_experiment(args):
     return run_bandit_experiment(*args)
 
-def distribute_bandit_experiment(agent, cores = os.cpu_count(), n_bandits = n_bandits,
-                          mean_baseline = 0, mean_std = 1, mean_drift_std = 0, warm_up = 0,
+def distribute_bandit_experiment(agent, bandit, cores = os.cpu_count(), warm_up = 0,
                           time_steps = time_steps, runs = runs,
                           progress_interval = progress_interval):
     counts = [runs // cores] * cores
     for i in range(runs % cores):
         counts[i] += 1
-    args_list = [(deepcopy(agent), n_bandits, mean_baseline, mean_std, mean_drift_std, warm_up, time_steps, count, progress_interval) for count in counts]
+    args_list = [(deepcopy(agent), deepcopy(bandit), warm_up, time_steps, count, progress_interval) for count in counts if count > 0]
     with ProcessPoolExecutor() as executor:
         results = list(executor.map(call_run_bandit_experiment, args_list))
-    return sum([results[i] * counts[i] for i in range(cores)]) / runs
+    return sum([results[i] * counts[i] for i in range(len(results))]) / runs
 
 if __name__ == '__main__':
     # Replicate Sutton and Barto, Figure 2.6
@@ -86,25 +81,27 @@ if __name__ == '__main__':
     ucb_average_rewards = {}
     gradient_bandit_average_rewards = {}
 
+    bandit = Bandit(n_bandits=n_bandits, mean_baseline=0, mean_std=1, mean_drift_std=0)
+
     for epsilon in epsilon_values:
         print(f'epsilon = {epsilon}')
         agent = GreedyAgent(actions=n_bandits, epsilon=epsilon)
-        epsilon_greedy_average_rewards[epsilon] = distribute_bandit_experiment(agent=agent)
+        epsilon_greedy_average_rewards[epsilon] = distribute_bandit_experiment(agent=agent, bandit=bandit)
 
     for value in greedy_optimistic_initial_values:
         print(f'initialization = {value}')
         agent = GreedyAgent(actions=n_bandits, initial_estimate=value, step_size=0.1)
-        greedy_optimistic_average_rewards[value] = distribute_bandit_experiment(agent=agent)
+        greedy_optimistic_average_rewards[value] = distribute_bandit_experiment(agent=agent, bandit=bandit)
 
     for c in ucb_c_values:
         print(f'c = {c}')
         agent = UCBAgent(actions=n_bandits, c=c)
-        ucb_average_rewards[c] = distribute_bandit_experiment(agent=agent)
+        ucb_average_rewards[c] = distribute_bandit_experiment(agent=agent, bandit=bandit)
 
     for alpha in gradient_bandit_step_sizes:
         print(f'alpha = {alpha}')
         agent = GradientAgent(actions=n_bandits, alpha=alpha)
-        gradient_bandit_average_rewards[alpha] = distribute_bandit_experiment(agent=agent)
+        gradient_bandit_average_rewards[alpha] = distribute_bandit_experiment(agent=agent, bandit=bandit)
 
     plt.plot(epsilon_greedy_average_rewards.keys(), epsilon_greedy_average_rewards.values(), label=f'epsilon-greedy')
     plt.plot(greedy_optimistic_average_rewards.keys(), greedy_optimistic_average_rewards.values(), label=f'greedy optimistic initialization')
@@ -125,35 +122,37 @@ if __name__ == '__main__':
     ucb_constant_step_average_rewards = {}
     gradient_bandit_average_rewards = {}
 
+    bandit = Bandit(n_bandits=n_bandits, mean_baseline=0, mean_std=0, mean_drift_std=0.01)
+
     for epsilon in epsilon_values:
         print(f'epsilon = {epsilon}')
         agent = GreedyAgent(actions=n_bandits, epsilon=epsilon)
-        epsilon_greedy_average_rewards[epsilon] = distribute_bandit_experiment(agent=agent, mean_std=0, mean_drift_std=0.01, warm_up=100000, time_steps=100000)
+        epsilon_greedy_average_rewards[epsilon] = distribute_bandit_experiment(agent=agent, bandit=bandit, warm_up=100000, time_steps=100000)
 
     for epsilon in epsilon_values:
         print(f'epsilon = {epsilon}')
         agent = GreedyAgent(actions=n_bandits, epsilon=epsilon, step_size=0.1)
-        epsilon_greedy_constant_step_average_rewards[epsilon] = distribute_bandit_experiment(agent=agent, mean_std=0, mean_drift_std=0.01, warm_up=100000, time_steps=100000)
+        epsilon_greedy_constant_step_average_rewards[epsilon] = distribute_bandit_experiment(agent=agent, bandit=bandit, warm_up=100000, time_steps=100000)
 
     for value in greedy_optimistic_initial_values:
         print(f'initialization = {value}')
         agent = GreedyAgent(actions=n_bandits, initial_estimate=value, step_size=0.1)
-        greedy_optimistic_average_rewards[value] = distribute_bandit_experiment(agent=agent, mean_std=0, mean_drift_std=0.01, warm_up=100000, time_steps=100000)
+        greedy_optimistic_average_rewards[value] = distribute_bandit_experiment(agent=agent, bandit=bandit, warm_up=100000, time_steps=100000)
 
     for c in ucb_c_values:
         print(f'c = {c}')
         agent = UCBAgent(actions=n_bandits, c=c)
-        ucb_average_rewards[c] = distribute_bandit_experiment(agent=agent, mean_std=0, mean_drift_std=0.01, warm_up=100000, time_steps=100000)
+        ucb_average_rewards[c] = distribute_bandit_experiment(agent=agent, bandit=bandit, warm_up=100000, time_steps=100000)
 
     for c in ucb_c_values:
         print(f'c = {c}')
         agent = UCBAgent(actions=n_bandits, c=c, step_size=0.1)
-        ucb_constant_step_average_rewards[c] = distribute_bandit_experiment(agent=agent, mean_std=0, mean_drift_std=0.01, warm_up=100000, time_steps=100000)
+        ucb_constant_step_average_rewards[c] = distribute_bandit_experiment(agent=agent, bandit=bandit, warm_up=100000, time_steps=100000)
 
     for alpha in gradient_bandit_step_sizes:
         print(f'alpha = {alpha}')
         agent = GradientAgent(actions=n_bandits, alpha=alpha)
-        gradient_bandit_average_rewards[alpha] = distribute_bandit_experiment(agent=agent, mean_std=0, mean_drift_std=0.01, warm_up=100000, time_steps=100000)
+        gradient_bandit_average_rewards[alpha] = distribute_bandit_experiment(agent=agent, bandit=bandit, warm_up=100000, time_steps=100000)
 
     plt.plot(epsilon_greedy_average_rewards.keys(), epsilon_greedy_average_rewards.values(), label=f'epsilon-greedy')
     plt.plot(epsilon_greedy_constant_step_average_rewards.keys(), epsilon_greedy_constant_step_average_rewards.values(), label=f'epsilon-greedy exponential average')
